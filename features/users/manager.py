@@ -5,9 +5,21 @@ from django.contrib.auth.hashers import make_password
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
+    @classmethod
+    def custom_normalize_email(cls, email):
+
+        email = email or ""
+        try:
+            email_name, domain_part = email.strip().rsplit("@", 1)
+        except ValueError:
+            pass
+        else:
+            email = email_name.lower() + "@" + domain_part.lower()
+        return email
+
     def _create_user(self, email: str | None = None, password: str | None = None, **extra_fields) -> AbstractBaseUser:
 
-        email = self.normalize_email(email)
+        email = self.custom_normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.password = make_password(password)
         user.save(using=self._db)
