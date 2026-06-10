@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>WebSocket Demo</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 0 16px;
+        }
+
+        #chat-section {
+            display: none;
+        }
+
+        #rooms-section {
+            display: none;
+        }
+
+        ul {
+            padding-left: 0;
+            list-style: none;
+        }
+
+        #room-list li {
+            padding: 8px 12px;
+            margin: 4px 0;
+            background: #f0f0f0;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        #room-list li:hover {
+            background: #ddd;
+        }
+
+        #messages {
+            border: 1px solid #ccc;
+            min-height: 120px;
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+
+        #messages li {
+            margin: 4px 0;
+        }
+
+        input[type=text],
+        input[type=password],
+        input[type=email] {
+            padding: 6px 8px;
+            margin-right: 4px;
+        }
+
+        button {
+            padding: 6px 12px;
+            cursor: pointer;
+        }
+
+        #error-msg {
+            color: red;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="login-section">
+        <h2>Login</h2>
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Senha">
+        <button id="login-btn">Entrar</button>
+        <p id="error-msg"></p>
+    </div>
+
+    <div id="rooms-section">
+        <h2>Salas</h2>
+        <ul id="room-list"></ul>
+        <button id="logout-btn">Logout</button>
+    </div>
+
+    <div id="chat-section">
+        <h2 id="room-title"></h2>
+        <ul id="messages"></ul>
+        <input type="text" id="msg" placeholder="Mensagem">
+        <button id="send-btn">Enviar</button>
+        <br><br>
+        <button id="back-btn">← Voltar para salas</button>
+    </div>
+
+    <script type="module">
+        const BASE = "http://localhost:8083";
+        let socket = null;
+
+        const loginSection = document.getElementById("login-section");
+        const roomsSection = document.getElementById("rooms-section");
+        const chatSection = document.getElementById("chat-section");
+
+        document.getElementById("login-btn").addEventListener("click", async () => {
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            const res = await fetch(`${BASE}/api/auth/`, {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password }),
+            });
+            if (res.ok) {
+                document.getElementById("error-msg").innerText = "";
+                showRooms();
+            } else {
+                document.getElementById("error-msg").innerText = "Email ou senha inválidos.";
+            }
+        });
+
+        document.getElementById("logout-btn").addEventListener("click", async () => {
+            await fetch(`${BASE}/api/auth/logout/`, {
+                method: "POST",
+                credentials: "include",
+            });
+            loginSection.style.display = "block";
+            roomsSection.style.display = "none";
+            chatSection.style.display = "none";
+        });
+
+        document.getElementById("back-btn").addEventListener("click", () => {
+            if (socket) { socket.close(); socket = null; }
+            document.getElementById("messages").innerHTML = "";
+            chatSection.style.display = "none";
+            roomsSection.style.display = "block";
+        });
+
+        async function showRooms() {
+            const res = await fetch(`${BASE}/api/rooms/`, { credentials: "include" });
+            const data = await res.json();
+            const rooms = data.results ?? data;
+            const list = document.getElementById("room-list");
+            list.innerHTML = "";
+            rooms.forEach(room => {
+                const li = document.createElement("li");
+                li.innerText = `${room.name}`;
+                li.addEventListener("click", () => joinRoom(room.id, room.name));
+                list.appendChild(li);
+            });
+            loginSection.style.display = "none";
+            roomsSection.style.display = "block";
+            chatSection.style.display = "none";
+        }
+
+        function joinRoom(roomId, roomName) {
+            document.getElementById("room-title").innerText = roomName;
+            document.getElementById("messages").innerHTML = "";
+            roomsSection.style.display = "none";
+            chatSection.style.display = "block";
+
+            socket = new WebSocket(`ws://localhost:8083/room/${roomId}/chat/`);
+
+            socket.onmessage = function (e) {
+                const data = JSON.parse(e.data);
+                const li = document.createElement("li");
+                li.innerText = `${data.username}: ${data.message}`;
+                document.getElementById("messages").appendChild(li);
+            };
+        }
+
+        document.getElementById("send-btn").addEventListener("click", () => {
+            const input = document.getElementById("msg");
+            if (socket && input.value.trim()) {
+                socket.send(JSON.stringify({ message: input.value }));
+                input.value = "";
+            }
+        });
+    </script>
+</body>
+
+</html>
