@@ -80,11 +80,7 @@ Foi implementada a classe `CurrentUserDefault`, uma classe de default compatíve
 
 ### Testes
 
-Os testes utilizam `pytest` + `pytest-django`, com fixtures centralizadas em `conftest.py` que cobrem criação de usuários, salas, mensagens, `APIClient` autenticado, `APIRequestFactory` e mocks de usuário para testes assíncronos.
-
-A estrutura segue a separação por camada onde cada arquivo de teste cobre uma frente específica entre Model, View e Serializer. Testes do `core` e do `consumer` fogem desse padrão por natureza, e cada função de teste possui um único foco de verificação.
-
-Os testes do consumer utilizam `WebsocketCommunicator` do `channels.testing` para simular conexões reais. Dependências externas (`get_room`, `save_message`) são isoladas via `unittest.mock.patch`, e usuários autenticados são injetados diretamente no `scope` como `MagicMock`, eliminando acesso ao banco durante os testes de conexão.
+Os testes utilizam `pytest` + `pytest-django`, com fixtures centralizadas em `conftest.py` que cobrem criação de usuários, salas, mensagens, `APIClient` autenticado, `APIRequestFactory` e mocks de usuário para testes assíncronos. A estrutura segue a separação por camada onde cada arquivo de teste cobre uma frente específica entre Model, View e Serializer. Testes do `core` e do `consumer` fogem desse padrão por natureza, e cada função de teste possui um único foco de verificação. Os testes do consumer utilizam `WebsocketCommunicator` do `channels.testing` para simular conexões reais. Dependências externas (`get_room`, `save_message`) são isoladas via `unittest.mock.patch`, e usuários autenticados são injetados diretamente no `scope` como `MagicMock`, eliminando acesso ao banco durante os testes de conexão.
 
 A cobertura total medida com `pytest-cov` é de **99%**.
 
