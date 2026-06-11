@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from features.rooms.models import Room, Message
-from features.rooms.fields import CurrentUserDefault
+from features.users.fields import CurrentUserDefault
 from features.users.api.serializers import UserSerializer
 
 
