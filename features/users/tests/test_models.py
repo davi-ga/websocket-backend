@@ -1,5 +1,4 @@
 import pytest
-from datetime import timedelta
 from features.users.models import User
 from django.db.utils import IntegrityError
 
