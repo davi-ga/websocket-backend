@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, patch
 from channels.testing import WebsocketCommunicator
 from channels.db import database_sync_to_async
 from channels.routing import URLRouter
@@ -57,19 +57,6 @@ async def test_connect_room_not_found(mock_user):
 
 
 @pytest.mark.django_db(transaction=True)
-async def test_disconnect_sends_system_message(mock_user, mock_room):
-    with patch(
-        "features.rooms.consumers.ChatConsumer.get_room",
-        new=AsyncMock(return_value=mock_room),
-    ):
-        communicator = await make_communicator(mock_user, mock_room.id)
-        await communicator.connect()
-        await communicator.receive_json_from()
-
-        await communicator.disconnect()
-
-
-@pytest.mark.django_db(transaction=True)
 async def test_disconnect_message_received_by_other_client(mock_user, mock_second_user, mock_room):
 
     with patch(
@@ -89,6 +76,7 @@ async def test_disconnect_message_received_by_other_client(mock_user, mock_secon
         await client1.disconnect()
 
         msg = await client2.receive_json_from()
+
         assert "disconnected" in msg["message"]
         assert msg["username"] == "system"
 
@@ -115,8 +103,10 @@ async def test_receive_valid_message(mock_user, mock_room):
         await communicator.send_json_to({"message": message})
 
         response = await communicator.receive_json_from()
+
         assert response["message"] == message
         assert response["username"] == "TestUser"
+
         mock_save.assert_called_once_with(message)
 
         await communicator.disconnect()
@@ -142,7 +132,7 @@ async def test_receive_message_too_long_is_ignored(mock_user, mock_room):
 
 
 @pytest.mark.django_db(transaction=True)
-async def test_receive_empty_message_is_ignored(mock_user, mock_room):
+async def test_receive_empty_json_object_is_ignored(mock_user, mock_room):
     with patch(
         "features.rooms.consumers.ChatConsumer.get_room",
         new=AsyncMock(return_value=mock_room),
