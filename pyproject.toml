@@ -23,6 +23,8 @@ dependencies = [
     "openpyxl==3.1.5",
     "channels==4.3.2",
     "channels-redis==4.3.0",
+    "pytest-asyncio",
+
 ]
 
 [tool.setuptools]
@@ -36,19 +38,16 @@ dev = [
     "pylint-django==2.7.0",
 ]
 
-[tool.pylint.MAIN]
+[tool.pylint.main]
 ignore-paths = [".*/migrations/.*"]
 load-plugins = ["pylint_django"]
-
-[tool.pylint.MASTER]
-load-plugins = ["pylint_django"]
 django-settings-module = "core.settings"
+
 init-hook = """
-import os
 import sys
 sys.path.append('.')
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
 """
+
 
 [tool.pylint.MESSAGE_CONTROL]
 disable = """
@@ -141,6 +140,7 @@ sections = [
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "core.settings"
+asyncio_mode = "auto"
 python_files = [
     "test.py",
     "tests.py",
@@ -167,4 +167,5 @@ omit = [
     "manage.py",
     "wsgi.py",
     "asgi.py",
+    "conftest.py",
 ]
