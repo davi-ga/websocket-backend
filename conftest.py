@@ -15,7 +15,7 @@ def client():
 
 @pytest.fixture
 def user_payload():
-    return {"name": "Davi", "email": "contato@daviga.dev.br", "password": "senha_segura_123"}
+    return {"name": "Teste", "email": "teste@testando.dev.br", "password": "senha_segura_123"}
 
 
 @pytest.fixture
@@ -33,6 +33,16 @@ def authenticated_client(user):
 @pytest.fixture
 def room(db, user):
     return Room.objects.create(name="Test Room", created_by=user)
+
+
+@pytest.fixture
+def room_alpha(db, user):
+    return Room.objects.create(name="Alpha Room", created_by=user)
+
+
+@pytest.fixture
+def room_beta(db, user):
+    return Room.objects.create(name="Beta Room", created_by=user)
 
 
 @pytest.fixture
@@ -61,6 +71,14 @@ def mock_user():
 
 
 @pytest.fixture
+def mock_second_user():
+    second_user = MagicMock()
+    second_user.is_authenticated = True
+    second_user.name = "SecondUser"
+    return second_user
+
+
+@pytest.fixture
 def mock_room():
     room = MagicMock()
     room.id = 1
@@ -72,10 +90,3 @@ def anonymous_user():
     user = MagicMock()
     user.is_authenticated = False
     return user
-
-
-@pytest.fixture
-def mock_second_user():
-    second_user = MagicMock()
-    second_user.is_authenticated = True
-    second_user.name = "SecondUser"
