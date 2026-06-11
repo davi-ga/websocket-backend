@@ -46,6 +46,12 @@ features/
 
 O servidor utiliza **sessões Django** como mecanismo de autenticação. O cookie `sessionid` gerado no login é também usado para autenticar conexões WebSocket.
 
+### Diagrama de Entidade-Relacionamento
+
+<img width="3098" height="1628" alt="image" src="https://github.com/user-attachments/assets/0b60869c-8a8e-4318-ac54-f5cf766d96a4" />
+
+
+
 ## Decisões
 
 ### Django Sessions
