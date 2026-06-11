@@ -75,7 +75,7 @@ O servidor utiliza **sessões Django** como mecanismo de autenticação. O cooki
 | Método | URL | Descrição |
 |---|---|---|
 | `GET` | `/api/health/` | Health check |
-| `GET` | `/api/docs/swagger-ui/` | Documentação interativa (Swagger) |
+| `GET` | `/api/docs/schema/swagger-ui/` | Documentação interativa (Swagger) |
 | `GET` | `/api/docs/schema/redoc/` | Documentação (ReDoc) |
 
 ## WebSocket
@@ -124,7 +124,7 @@ docker compose exec wapi python manage.py createsuperuser
 ## Acessando a aplicação
 
 - **API**: `http://localhost:{API_PORT}`
-- **Swagger UI**: `http://localhost:{API_PORT}/api/docs/swagger-ui/`
+- **Swagger UI**: `http://localhost:{API_PORT}/api/docs/schema/swagger-ui/`
 - **Admin**: `http://localhost:{API_PORT}/admin/`
 - **Chat (template de teste)**: `http://localhost:{API_PORT}/chat/`
 
