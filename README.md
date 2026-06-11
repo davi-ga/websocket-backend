@@ -68,7 +68,7 @@ O `docker-compose.yml` define uma rede interna compartilhada entre todos os serv
 
 ### Usuário
 
-O model `User` estende `AbstractBaseUser` + `PermissionsMixin`, com um `UserManager` personalizado. O `email` substitui o `username` como identificador principal, e o campo `name` é adicionado. Novos usuários são criados com `is_active=False` por padrão (Permitindo integração com verificação de conta via e-mail). O `UserManager` implementa uma normalização de e-mail própria que converte tanto o nome local quanto o domínio para minúsculas, diferindo do comportamento padrão do Django, que normaliza apenas o domínio. O `PermissionsMixin` é o responsável pela integração com o sistema de permissões do Django (`is_superuser`, `groups`, `user_permissions`).
+O model `User` estende `AbstractBaseUser` + `PermissionsMixin`, com um `UserManager` personalizado. O `email` substitui o `username` como identificador principal, e o campo `name` é adicionado. Novos usuários são criados com `is_active=False` por padrão (permitindo integração com verificação de conta via e-mail). O `UserManager` implementa uma normalização de e-mail própria que converte tanto o nome local quanto o domínio para minúsculas, diferindo do comportamento padrão do Django, que normaliza apenas o domínio. O `PermissionsMixin` é o responsável pela integração com o sistema de permissões do Django (`is_superuser`, `groups`, `user_permissions`).
 
 ### Consumer
 
