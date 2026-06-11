@@ -16,7 +16,7 @@ def test_email_field_format():
 
 
 @pytest.mark.django_db
-def test_valid_credentials_returns_user(user, user_payload):
+def test_valid_credentials(user, user_payload):
     data = {"email": user_payload["email"], "password": user_payload["password"]}
     serializer = AuthenticateSerializer(data=data)
     assert serializer.is_valid(), serializer.errors
