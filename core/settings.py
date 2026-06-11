@@ -99,6 +99,12 @@ CHANNEL_LAYERS = {
     }
 }
 
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": env("REDIS_CACHE_URL"),
+    }
+}
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -136,9 +142,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = 'pt-br'
+LANGUAGE_CODE = "en-US"
 
-TIME_ZONE = 'America/Sao_Paulo'
+TIME_ZONE = "America/Sao_Paulo"
 
 USE_I18N = True
 
@@ -173,6 +179,10 @@ SPECTACULAR_SETTINGS = {
     "REDOC_DIST": "SIDECAR",
     "DEFAULT_GENERATOR_CLASS": "drf_spectacular.generators.SchemaGenerator",
     "TAGS": [
+        {
+            "name": "health",
+            "description": "Route for API Health",
+        },
         {
             "name": "auth",
             "description": "Routes for handling Authentication.",
