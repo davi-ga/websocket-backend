@@ -85,7 +85,6 @@ Os testes utilizam `pytest` + `pytest-django`, com fixtures centralizadas em `co
 A cobertura total medida com `pytest-cov` é de **99%**.
 
 
-
 ## Endpoints da API
 
 ### Autenticação
