@@ -68,11 +68,11 @@ O `docker-compose.yml` define uma rede interna compartilhada entre todos os serv
 
 ### Usuário
 
-O model de usuário foi customizado a partir do `AbstractBaseUser` em conjunto com um `BaseUserManager` personalizado, substituindo o `username` pelo `email` como identificador principal e adicionando o campo `name`. Essa abordagem mantém compatibilidade total com o sistema de autenticação e permissões do Django.
+O model `User` estende `AbstractBaseUser` + `PermissionsMixin`, com um `UserManager` personalizado. O `email` substitui o `username` como identificador principal, e o campo `name` é adicionado. Novos usuários são criados com `is_active=False` por padrão (Permitindo integração com verificação de conta via e-mail). O `UserManager` implementa uma normalização de e-mail própria que converte tanto o nome local quanto o domínio para minúsculas, diferindo do comportamento padrão do Django, que normaliza apenas o domínio. O `PermissionsMixin` é o responsável pela integração com o sistema de permissões do Django (`is_superuser`, `groups`, `user_permissions`).
 
 ### Consumer
 
-O `ChatConsumer` estende `AsyncWebsocketConsumer` seguindo as convenções do Django Channels, sobrescrevendo `connect`, `disconnect` e `receive` para gerenciar o ciclo de vida da conexão, a entrada e saída do grupo da sala e o recebimento e persistência de mensagens.
+O `ChatConsumer` estende `AsyncWebsocketConsumer` sobrescrevendo `connect`, `disconnect`, `receive` e `chat_message`. O `connect` valida a autenticação, busca a sala, adiciona o canal ao grupo e emite uma mensagem de sistema. O `receive` valida e repassa a mensagem ao grupo via `group_send`. O `chat_message` é o handler de grupo que entrega a mensagem a cada cliente conectado. O `disconnect` emite a mensagem de saída e remove o canal do grupo.
 
 ### HiddenField
 
