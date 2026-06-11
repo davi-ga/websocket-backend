@@ -7,12 +7,12 @@ API REST + WebSocket para chat em tempo real entre usuários, desenvolvida como 
 
 - [Stack](#stack)
 - [Arquitetura](#arquitetura)
+- [Decisões](#decisões)
 - [Endpoints da API](#endpoints-da-api)
   - [Autenticação](#autenticação)
   - [Usuários](#usuários)
   - [Salas](#salas)
   - [Utilitários](#utilitários)
-- [Decisões](#decisões)
 - [WebSocket](#websocket)
 - [Como executar](#como-executar)
 - [Acessando a aplicação](#acessando-a-aplicação)
