@@ -17,6 +17,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.user: User | None = None
 
     async def connect(self) -> None:
+
         self.user = self.scope["user"]
 
         if self.user.is_authenticated:
@@ -33,14 +34,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.channel_layer.group_add(self.room_group, self.channel_name)
 
             await self.accept()
-
             await self.send_system_message("join")
 
         else:
             await self.close()
 
     async def disconnect(self, code: int) -> None:
-        if self.room_group:
+        if self.room_group and self.user and self.user.is_authenticated:
             await self.send_system_message("disconnect")
             await self.channel_layer.group_discard(self.room_group, self.channel_name)
 

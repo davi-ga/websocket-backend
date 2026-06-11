@@ -17,6 +17,9 @@ class Room(models.Model):
         verbose_name = _("Room")
         verbose_name_plural = _("Rooms")
 
+    def __str__(self):
+        return str(self.name)
+
 
 class Message(models.Model):
 
@@ -27,7 +30,13 @@ class Message(models.Model):
 
     sended_at = models.DateTimeField(_("Sended At"), auto_now_add=True)
 
+    def __str__(self):
+        return f"{self.author} - {self.room.name}"
+
     class Meta:
         verbose_name = _("Message")
         verbose_name_plural = _("Messages")
         indexes = [models.Index(fields=["author", "room"])]
+
+    def __str__(self):
+        return f"{self.author.name} - {self.room.name}"
