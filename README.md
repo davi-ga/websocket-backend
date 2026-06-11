@@ -76,7 +76,7 @@ O `ChatConsumer` estende `AsyncWebsocketConsumer` seguindo as convenções do Dj
 
 ### HiddenField
 
-Foi implementada uma subclasse de `HiddenField` que resolve o usuário autenticado diretamente a partir do `request` disponível no contexto do serializer. Com isso, os campos de autoria (criador da sala, remetente da mensagem) são preenchidos automaticamente, sem expô-los na entrada da API.
+Foi implementada a classe `CurrentUserDefault`, uma classe de default compatível com DRF (`requires_context = True`) no qual resolve o usuário autenticado a partir do `request` disponível no contexto do serializer, lançando `AuthenticationFailed` caso o usuário não esteja autenticado. Utilizada como `default=` em campos `HiddenField`, ela preenche automaticamente os campos de autoria (criador da sala, remetente da mensagem) sem expô-los na entrada da API.
 
 ### Testes
 
