@@ -31,35 +31,32 @@ def test_missing_required_fields():
 
 
 @pytest.mark.django_db
-def test_password_min_length_validation():
-    data = {"name": "Test User", "email": "short@example.com", "password": "123"}
-    serializer = UserSerializer(data=data)
+def test_password_min_length_validation(user_payload):
+    user_payload["password"] = "123"
+    serializer = UserSerializer(data=user_payload)
     assert not serializer.is_valid()
     assert "password" in serializer.errors
 
 
 @pytest.mark.django_db
-def test_valid_data_creates_user():
-    data = {"name": "Test User", "email": "test@example.com", "password": "secret123"}
-    serializer = UserSerializer(data=data)
+def test_valid_data_creates_user(user_payload):
+    serializer = UserSerializer(data=user_payload)
     assert serializer.is_valid(), serializer.errors
     user = serializer.save()
-    assert user.pk is not None
+    assert user.id is not None
     assert user.is_active is True
 
 
 @pytest.mark.django_db
-def test_password_is_hashed_on_create():
-    data = {"name": "Test User", "email": "hash@example.com", "password": "secret123"}
-    serializer = UserSerializer(data=data)
+def test_password_is_hashed_on_create(user_payload):
+    serializer = UserSerializer(data=user_payload)
     serializer.is_valid(raise_exception=True)
     user = serializer.save()
-    assert user.password != "secret123"
-    assert user.check_password("secret123")
+    assert user.password != user_payload["password"]
+    assert user.check_password(user_payload["password"])
 
 
-def test_duplicate_email_is_invalid(user):
-    data = {"name": "Outro", "email": user.email, "password": "secret123"}
-    serializer = UserSerializer(data=data)
+def test_duplicate_email_is_invalid(user, user_payload):
+    serializer = UserSerializer(data=user_payload)
     assert not serializer.is_valid()
     assert "email" in serializer.errors
