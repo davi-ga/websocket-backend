@@ -7,7 +7,6 @@ API REST + WebSocket para chat em tempo real entre usuários, desenvolvida como 
 
 - [Stack](#stack)
 - [Arquitetura](#arquitetura)
-- [Decisões](#decisões)
 - [Endpoints da API](#endpoints-da-api)
   - [Autenticação](#autenticação)
   - [Usuários](#usuários)
@@ -17,6 +16,7 @@ API REST + WebSocket para chat em tempo real entre usuários, desenvolvida como 
 - [Como executar](#como-executar)
 - [Acessando a aplicação](#acessando-a-aplicação)
 - [Testes](#testes)
+- [Decisões](#decisões)
 
 ## Stack
 
@@ -49,47 +49,6 @@ O servidor utiliza **sessões Django** como mecanismo de autenticação. O cooki
 ### Diagrama de Entidade-Relacionamento
 
 <img width="3098" height="1628" alt="image" src="https://github.com/user-attachments/assets/0b60869c-8a8e-4318-ac54-f5cf766d96a4" />
-
-
-
-## Decisões
-
-### Django Sessions
-
-A rota WebSocket utiliza `AuthMiddlewareStack` do Django Channels, que autentica conexões a partir da sessão Django já existente no cookie. Adotar JWT exigiria um middleware customizado para extrair e validar o token na URL da conexão, além de lógica de renovação via `refresh_token`. Dado o escopo do projeto e a familiaridade com `AuthMiddlewareStack`, optou-se por manter Django Sessions.
-
-**CSRF:** Por padrão, o Django exige o `csrf_token` em requisições `POST`, o que dificulta testes via Postman/Insomnia. Para contornar isso foi criada a classe `CsrfExemptSessionAuthentication`, que sobrescreve `enforce_csrf` sem executar a validação. Essa abordagem é adequada para demonstração, mas em produção o gerenciamento do CSRF token deve ser feito pelo front-end.
-
-### Redis
-
-O Redis é utilizado tanto como Channel Layer para o Django Channels quanto como backend de cache. Por ser leve, de fácil integração com o Django e amplamente adotado em ambientes de desenvolvimento, ele é provisionado via Docker como um serviço dedicado no compose.
-
-### Estruturação do Sistema
-
-A aplicação segue uma arquitetura orientada a features, toda a lógica de negócio reside em `features/`, com cada módulo encapsulando seus próprios models, views, serializers, rotas e testes. O `core/` concentra apenas configurações globais e utilitários transversais, como Swagger e Health Check, garantindo baixo acoplamento entre os domínios.
-
-### Containers
-
-O `docker-compose.yml` define uma rede interna compartilhada entre todos os serviços, volumes persistentes para o banco de dados e o Redis, e healthchecks customizados que garantem que cada serviço só seja considerado pronto após responder corretamente, evitando condições de corrida na inicialização.
-
-### Usuário
-
-O model `User` estende `AbstractBaseUser` + `PermissionsMixin`, com um `UserManager` personalizado. O `email` substitui o `username` como identificador principal, e o campo `name` é adicionado. Novos usuários são criados com `is_active=False` por padrão (permitindo integração com verificação de conta via e-mail). O `UserManager` implementa uma normalização de e-mail própria que converte tanto o nome local quanto o domínio para minúsculas, diferindo do comportamento padrão do Django, que normaliza apenas o domínio. O `PermissionsMixin` é o responsável pela integração com o sistema de permissões do Django (`is_superuser`, `groups`, `user_permissions`).
-
-### Consumer
-
-O `ChatConsumer` estende `AsyncWebsocketConsumer` sobrescrevendo `connect`, `disconnect`, `receive` e `chat_message`. O `connect` valida a autenticação, busca a sala, adiciona o canal ao grupo e emite uma mensagem de sistema. O `receive` valida e repassa a mensagem ao grupo via `group_send`. O `chat_message` é o handler de grupo que entrega a mensagem a cada cliente conectado. O `disconnect` emite a mensagem de saída e remove o canal do grupo.
-
-### HiddenField
-
-Foi implementada a classe `CurrentUserDefault`, uma classe de default compatível com DRF (`requires_context = True`) no qual resolve o usuário autenticado a partir do `request` disponível no contexto do serializer, lançando `AuthenticationFailed` caso o usuário não esteja autenticado. Utilizada como `default=` em campos `HiddenField`, ela preenche automaticamente os campos de autoria (criador da sala, remetente da mensagem) sem expô-los na entrada da API.
-
-### Testes
-
-Os testes utilizam `pytest` + `pytest-django`, com fixtures centralizadas em `conftest.py` que cobrem criação de usuários, salas, mensagens, `APIClient` autenticado, `APIRequestFactory` e mocks de usuário para testes assíncronos. A estrutura segue a separação por camada onde cada arquivo de teste cobre uma frente específica entre Model, View e Serializer. Testes do `core` e do `consumer` fogem desse padrão por natureza, e cada função de teste possui um único foco de verificação. Os testes do consumer utilizam `WebsocketCommunicator` do `channels.testing` para simular conexões reais. Dependências externas (`get_room`, `save_message`) são isoladas via `unittest.mock.patch`, e usuários autenticados são injetados diretamente no `scope` como `MagicMock`, eliminando acesso ao banco durante os testes de conexão.
-
-A cobertura total medida com `pytest-cov` é de **99%**.
-
 
 ## Endpoints da API
 
@@ -178,3 +137,45 @@ docker compose exec -it wapi pytest
 # Executar testes de um módulo específico
 docker compose exec -it wapi pytest features/rooms/tests/
 ```
+
+
+
+## Decisões
+
+### Django Sessions
+
+A rota WebSocket utiliza `AuthMiddlewareStack` do Django Channels, que autentica conexões a partir da sessão Django já existente no cookie. Adotar JWT exigiria um middleware customizado para extrair e validar o token na URL da conexão, além de lógica de renovação via `refresh_token`. Dado o escopo do projeto e a familiaridade com `AuthMiddlewareStack`, optou-se por manter Django Sessions.
+
+**CSRF:** Por padrão, o Django exige o `csrf_token` em requisições `POST`, o que dificulta testes via Postman/Insomnia. Para contornar isso foi criada a classe `CsrfExemptSessionAuthentication`, que sobrescreve `enforce_csrf` sem executar a validação. Essa abordagem é adequada para demonstração, mas em produção o gerenciamento do CSRF token deve ser feito pelo front-end.
+
+### Redis
+
+O Redis é utilizado tanto como Channel Layer para o Django Channels quanto como backend de cache. Por ser leve, de fácil integração com o Django e amplamente adotado em ambientes de desenvolvimento, ele é provisionado via Docker como um serviço dedicado no compose.
+
+### Estruturação do Sistema
+
+A aplicação segue uma arquitetura orientada a features, toda a lógica de negócio reside em `features/`, com cada módulo encapsulando seus próprios models, views, serializers, rotas e testes. O `core/` concentra apenas configurações globais e utilitários transversais, como Swagger e Health Check, garantindo baixo acoplamento entre os domínios.
+
+### Containers
+
+O `docker-compose.yml` define uma rede interna compartilhada entre todos os serviços, volumes persistentes para o banco de dados e o Redis, e healthchecks customizados que garantem que cada serviço só seja considerado pronto após responder corretamente, evitando condições de corrida na inicialização.
+
+### Usuário
+
+O model `User` estende `AbstractBaseUser` + `PermissionsMixin`, com um `UserManager` personalizado. O `email` substitui o `username` como identificador principal, e o campo `name` é adicionado. Novos usuários são criados com `is_active=False` por padrão (permitindo integração com verificação de conta via e-mail). O `UserManager` implementa uma normalização de e-mail própria que converte tanto o nome local quanto o domínio para minúsculas, diferindo do comportamento padrão do Django, que normaliza apenas o domínio. O `PermissionsMixin` é o responsável pela integração com o sistema de permissões do Django (`is_superuser`, `groups`, `user_permissions`).
+
+### Consumer
+
+O `ChatConsumer` estende `AsyncWebsocketConsumer` sobrescrevendo `connect`, `disconnect`, `receive` e `chat_message`. O `connect` valida a autenticação, busca a sala, adiciona o canal ao grupo e emite uma mensagem de sistema. O `receive` valida e repassa a mensagem ao grupo via `group_send`. O `chat_message` é o handler de grupo que entrega a mensagem a cada cliente conectado. O `disconnect` emite a mensagem de saída e remove o canal do grupo.
+
+### HiddenField
+
+Foi implementada a classe `CurrentUserDefault`, uma classe de default compatível com DRF (`requires_context = True`) no qual resolve o usuário autenticado a partir do `request` disponível no contexto do serializer, lançando `AuthenticationFailed` caso o usuário não esteja autenticado. Utilizada como `default=` em campos `HiddenField`, ela preenche automaticamente os campos de autoria (criador da sala, remetente da mensagem) sem expô-los na entrada da API.
+
+### Testes
+
+Os testes utilizam `pytest` + `pytest-django`, com fixtures centralizadas em `conftest.py` que cobrem criação de usuários, salas, mensagens, `APIClient` autenticado, `APIRequestFactory` e mocks de usuário para testes assíncronos. A estrutura segue a separação por camada onde cada arquivo de teste cobre uma frente específica entre Model, View e Serializer. Testes do `core` e do `consumer` fogem desse padrão por natureza, e cada função de teste possui um único foco de verificação. Os testes do consumer utilizam `WebsocketCommunicator` do `channels.testing` para simular conexões reais. Dependências externas (`get_room`, `save_message`) são isoladas via `unittest.mock.patch`, e usuários autenticados são injetados diretamente no `scope` como `MagicMock`, eliminando acesso ao banco durante os testes de conexão.
+
+A cobertura total medida com `pytest-cov` é de **99%**.
+
+
