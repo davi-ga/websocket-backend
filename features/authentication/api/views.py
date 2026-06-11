@@ -1,6 +1,7 @@
 from rest_framework import views, response, status
 from drf_spectacular.utils import extend_schema
 from django.contrib.auth import login, logout
+from django.utils.translation import gettext_lazy as _
 
 from features.authentication.api.serializers import AuthenticateSerializer
 
@@ -22,7 +23,7 @@ class AuthenticateAPIView(views.APIView):
 
         login(request, user)
 
-        return response.Response({"success": "User has been logged in successfuly"}, status=status.HTTP_200_OK)
+        return response.Response({"success": _("User has been logged in successfuly")}, status=status.HTTP_200_OK)
 
 
 class LogoutAPIView(views.APIView):
@@ -39,6 +40,6 @@ class LogoutAPIView(views.APIView):
         logout(request)
 
         return response.Response(
-            {"success": "You have been successfully logged out."},
+            {"success": _("You have been successfully logged out.")},
             status=status.HTTP_200_OK,
         )
